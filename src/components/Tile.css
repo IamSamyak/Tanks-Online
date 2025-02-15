@@ -1,0 +1,9 @@
+.tile {
+  display: block;
+  margin: 0;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+  background-size: cover;
+}
