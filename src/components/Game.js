@@ -3,6 +3,7 @@ import Tile from './Tile';
 import Player from './Player';
 import Enemies from './Enemies';
 import './Game.css';
+import Enemy from './Enemy';
 
 const tileMapping = {
   '.': 'empty',
@@ -74,52 +75,17 @@ const Game = () => {
       row: position.row,
     });
 
-    setTimeout(() => {
-      setBonus(null); // Clear bonus after 10 seconds
-      setTimeout(() => spawnBonus(emptyTiles), 10000); // Respawn another bonus after 10 seconds
-    }, 10000);
-  };
-
-  const handleBonus = (bonusType) => {
-    // switch (bonusType) {
-    //   case 'bonus_grenade':
-    //     console.log('Grenade: all enemies are destroyed');
-    //     break;
-    //   case 'bonus_helmet':
-    //     console.log('Helmet: active player shield for 10 seconds');
-    //     break;
-    //   case 'bonus_clock':
-    //     console.log('Clock: freeze all enemies for 8 seconds');
-    //     break;
-    //   case 'bonus_shovel':
-    //     console.log('Shovel: create stone wall around eagle for 15 seconds');
-    //     break;
-    //   case 'bonus_tank':
-    //     console.log('Tank: increase player lives count');
-    //     break;
-    //   case 'bonus_star':
-    //     console.log('Star: increase player speed, each next one increases max bullets count');
-    //     break;
-    //   case 'bonus_gun':
-    //     console.log('Gun: same as three stars');
-    //     break;
-    //   case 'bonus_boat':
-    //     console.log('Boat: allows to move on the water');
-    //     break;
-    //   default:
-    //     console.log('Unknown bonus type');
-    // }
+    setTimeout(()=>{
+     setBonus(null);
+     setTimeout(()=>{
+      spawnBonus(emptyTiles);
+     },10000)
+    },5000)
   };
 
   useEffect(() => {
-    loadLevel(7);
+    loadLevel(1);
   }, []);
-
-  useEffect(() => {
-    if (bonus) {
-      handleBonus(bonus.type);
-    }
-  }, [bonus]);
 
   return (
     <div className="game-wrapper">
@@ -147,9 +113,14 @@ const Game = () => {
           levelMap={levelMap}
           setLevelMap={setLevelMap}
           initialPosition={{ type: 'A', col: 9, row: 21, color: 'blue', direction: 'up' }}
+          bonus={bonus} 
         />
 
-        <Enemies enemies={enemies} setEnemies={setEnemies} levelMap={levelMap} />
+        <Enemy levelMap={levelMap}
+          setLevelMap={setLevelMap}
+          initialPosition={{ type: 'A', col: 0, row: 0, color: 'blue', direction: 'right' }}/>
+
+        {/* <Enemies enemies={enemies} setEnemies={setEnemies} levelMap={levelMap} /> */}
 
         {bonus && (
           <Tile

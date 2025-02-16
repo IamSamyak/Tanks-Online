@@ -3,12 +3,12 @@ import useMovement from '../hooks/useMovement';
 import Tile from './Tile';
 import Bullet from './Bullet';
 import Explosion from './Explosion';
-import { checkBonusCollision, handleBulletCollision } from '../utils/collisions';
+import { handleBulletCollision } from '../utils/collisions';
 import { shoot } from '../utils/actions';
 
-const Player = ({ levelMap, setLevelMap, initialPosition, bonus }) => {
+const Enemy = ({ levelMap, setLevelMap, initialPosition }) => {
     const {
-        position: player,
+        position: enemy,
         moveUp,
         moveDown,
         moveLeft,
@@ -19,31 +19,35 @@ const Player = ({ levelMap, setLevelMap, initialPosition, bonus }) => {
     const [bullets, setBullets] = useState([]);
     const [explosions, setExplosions] = useState([]);
 
-    useEffect(() => {
-        checkBonusCollision(bonus, player);
-    }, [player, bonus]);
+    const getRandomDirection = () => {
+        const directions = ['up', 'down', 'left', 'right'];
+        const randomIndex = Math.floor(Math.random() * directions.length);
+        return directions[randomIndex];
+    };
 
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.key === 'w' || event.key === 'W') moveUp();
-            else if (event.key === 'a' || event.key === 'A') moveLeft();
-            else if (event.key === 's' || event.key === 'S') moveDown();
-            else if (event.key === 'd' || event.key === 'D') moveRight();
-            else if (event.key === 'f' || event.key === 'F') shoot(player, levelMap, setLevelMap, setBullets, setExplosions);
-        };
+    useEffect(() => {        
+        const interval = setInterval(() => {
+            
+            const random = Math.random();
+            console.log('random is ',random);
+            if (random < 0.5) {
+                // Move straight
+                if (enemy.direction === 'up') moveUp();
+                else if (enemy.direction === 'down') moveDown();
+                else if (enemy.direction === 'left') moveLeft();
+                else if (enemy.direction === 'right') moveRight();
+            } else if (random < 0.8) {
+                // Rotate (change direction without moving)
+                const newDirection = getRandomDirection();
+                enemy.direction = newDirection;
+            } else {
+                // Fire a bullet
+                shoot(enemy, levelMap, setLevelMap, setBullets, setExplosions);
+            }
+        }, 500); // Adjust the interval as needed
 
-        const handleMouseDown = (event) => {
-            if (event.button === 0) shoot(player, levelMap, setLevelMap, setBullets, setExplosions);
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('mousedown', handleMouseDown);
-
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('mousedown', handleMouseDown);
-        };
-    }, [moveUp, moveDown, moveLeft, moveRight, player.direction]);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -63,12 +67,11 @@ const Player = ({ levelMap, setLevelMap, initialPosition, bonus }) => {
                 type="enemy_A"
                 style={{
                     position: 'absolute',
-                    left: `${player.col * 32}px`,
-                    top: `${player.row * 32}px`,
+                    left: `${enemy.col * 32}px`,
+                    top: `${enemy.row * 32}px`,
                     width: '64px',
                     height: '64px',
-                    backgroundColor: player.color,
-                    transform: getRotation(player.direction),
+                    transform: getRotation(enemy.direction),
                 }}
             />
             {bullets.map((bullet, index) => (
@@ -97,4 +100,4 @@ const Player = ({ levelMap, setLevelMap, initialPosition, bonus }) => {
     );
 };
 
-export default Player;
+export default Enemy;
