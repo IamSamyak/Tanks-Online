@@ -17,6 +17,7 @@ import bonusTank from '../assets/bonus_tank.png';
 import bonusStar from '../assets/bonus_star.png';
 import bonusGun from '../assets/bonus_gun.png';
 import bonusBoat from '../assets/bonus_boat.png';
+import baseImage from '../assets/base.png';
 import './Tile.css';
 
 const images = {
@@ -37,6 +38,7 @@ const images = {
   bonus_star: bonusStar,
   bonus_gun: bonusGun,
   bonus_boat: bonusBoat,
+  base: baseImage, 
 };
 
 const Tile = ({ type, style }) => {

@@ -1,0 +1,8 @@
+.explosion {
+  animation: explosion-animation 0.5s steps(4) forwards;
+}
+
+@keyframes explosion-animation {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
