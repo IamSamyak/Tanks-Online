@@ -1,26 +1,22 @@
+// src/components/Game.js
+
 import React, { useEffect, useState } from 'react';
 import Tile from './Tile';
 import Player from './Player';
-import Enemies from './Enemies';
 import './Game.css';
 import Enemy from './Enemy';
+import { spwanBonus } from '../utils/spwan'; // Import the spawnBonus function
+import { tileMapping } from '../constants/game-constants'; 
+import GameInfo from './GameInfo'; // Import GameInfo component
 
-const tileMapping = {
-  '.': 'empty',
-  '#': 'brick',
-  '@': 'stone',
-  '%': 'bush',
-  '~': 'water',
-  '-': 'ice',
-};
-
-const NUM_ENEMIES = 3;
-const bonusTypes = ['grenade', 'helmet', 'clock', 'shovel', 'tank', 'star', 'gun', 'boat'];
+const NUM_ENEMIES = 2;
 
 const Game = () => {
   const [levelMap, setLevelMap] = useState([]);
   const [enemies, setEnemies] = useState([]);
   const [bonus, setBonus] = useState(null);
+  const [playerPosition, setPlayerPosition] = useState({ col: 9, row: 21, direction: 'up', color: 'blue' });
+  const [playerPower, setPlayerPower] = useState(3); // Dummy value for player power
 
   const loadLevel = async (levelNumber) => {
     try {
@@ -43,44 +39,35 @@ const Game = () => {
         tiles.push(tileRow);
       });
 
+      // Set enemies at random positions
       const tempEnemies = [];
       for (let i = 0; i < NUM_ENEMIES; i++) {
         const randomIndex = Math.floor(Math.random() * emptyTiles.length);
         const position = emptyTiles[randomIndex];
         tempEnemies.push({
+          id: `enemy_${i}`,
           type: 'A',
           col: position.col,
           row: position.row,
           direction: 'up'
         });
-        emptyTiles.splice(randomIndex, 1);
+        emptyTiles.splice(randomIndex, 1); // Remove the occupied tile from the list
       }
 
       setLevelMap(tiles);
       setEnemies(tempEnemies);
-      spawnBonus(emptyTiles); // Initial bonus spawn
+      spwanBonus(emptyTiles, setBonus); // Initial bonus spawn
     } catch (error) {
       console.error('Failed to load level:', error);
     }
   };
 
-  const spawnBonus = (emptyTiles) => {
-    const randomIndex = Math.floor(Math.random() * emptyTiles.length);
-    const position = emptyTiles[randomIndex];
-    const randomBonusType = bonusTypes[Math.floor(Math.random() * bonusTypes.length)];
-
-    setBonus({
-      type: `bonus_${randomBonusType}`,
-      col: position.col,
-      row: position.row,
-    });
-
-    setTimeout(()=>{
-     setBonus(null);
-     setTimeout(()=>{
-      spawnBonus(emptyTiles);
-     },10000)
-    },5000)
+  const updateEnemyPosition = (id, newPosition) => {
+    setEnemies((prevEnemies) =>
+      prevEnemies.map((enemy) =>
+        enemy.id === id ? { ...enemy, col: newPosition.col, row: newPosition.row } : enemy
+      )
+    );
   };
 
   useEffect(() => {
@@ -109,19 +96,29 @@ const Game = () => {
           }}
         />
 
+        {/* Pass playerPosition state to Player component */}
         <Player
           levelMap={levelMap}
           setLevelMap={setLevelMap}
-          initialPosition={{ type: 'A', col: 9, row: 21, color: 'blue', direction: 'up' }}
-          bonus={bonus} 
+          playerPosition={playerPosition}
+          setPlayerPosition={setPlayerPosition}
+          bonus={bonus}
         />
 
-        <Enemy levelMap={levelMap}
-          setLevelMap={setLevelMap}
-          initialPosition={{ type: 'A', col: 0, row: 0, color: 'blue', direction: 'right' }}/>
+        {/* Loop through enemies and render each one */}
+        {enemies.map((enemy) => (
+          <Enemy
+            key={enemy.id}
+            initialPosition={{ col: enemy.col, row: enemy.row, direction: enemy.direction }}
+            levelMap={levelMap}
+            setLevelMap={setLevelMap}
+            type={enemy.type}
+            target={playerPosition}
+            updatePosition={updateEnemyPosition}
+          />
+        ))}
 
-        {/* <Enemies enemies={enemies} setEnemies={setEnemies} levelMap={levelMap} /> */}
-
+        {/* Render bonus if exists */}
         {bonus && (
           <Tile
             type={bonus.type}
@@ -136,17 +133,8 @@ const Game = () => {
           />
         )}
       </div>
-
-      <div className="player-info">
-        <h3>Player Controls</h3>
-        <ul>
-          <li>W / w: Move Up</li>
-          <li>A / a: Move Left</li>
-          <li>S / s: Move Down</li>
-          <li>D / d: Move Right</li>
-          <li>F / f: Fire</li>
-        </ul>
-      </div>
+      
+      <GameInfo playerPower={playerPower} />
     </div>
   );
 };

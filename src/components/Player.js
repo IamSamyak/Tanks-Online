@@ -1,39 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import useMovement from '../hooks/useMovement';
 import Tile from './Tile';
 import Bullet from './Bullet';
 import Explosion from './Explosion';
 import { checkBonusCollision, handleBulletCollision } from '../utils/collisions';
 import { shoot } from '../utils/actions';
+import { moveUp, moveDown, moveLeft, moveRight, getRotation } from '../utils/movement'; // Using movement util
 
-const Player = ({ levelMap, setLevelMap, initialPosition, bonus }) => {
-    const {
-        position: player,
-        moveUp,
-        moveDown,
-        moveLeft,
-        moveRight,
-        getRotation,
-    } = useMovement(initialPosition, levelMap);
-
+const Player = ({ levelMap, setLevelMap, playerPosition, setPlayerPosition, bonus }) => {
     const [bullets, setBullets] = useState([]);
     const [explosions, setExplosions] = useState([]);
 
+    // Handle Bonus Collision
     useEffect(() => {
-        checkBonusCollision(bonus, player);
-    }, [player, bonus]);
+        checkBonusCollision(bonus, playerPosition);
+    }, [playerPosition, bonus]);
 
+    // Handle Player Movement and Shooting
     useEffect(() => {
         const handleKeyDown = (event) => {
-            if (event.key === 'w' || event.key === 'W') moveUp();
-            else if (event.key === 'a' || event.key === 'A') moveLeft();
-            else if (event.key === 's' || event.key === 'S') moveDown();
-            else if (event.key === 'd' || event.key === 'D') moveRight();
-            else if (event.key === 'f' || event.key === 'F') shoot(player, levelMap, setLevelMap, setBullets, setExplosions);
+            if (event.key === 'w' || event.key === 'W') {
+                setPlayerPosition(prevPlayer => moveUp(prevPlayer, levelMap));
+            } else if (event.key === 'a' || event.key === 'A') {
+                setPlayerPosition(prevPlayer => moveLeft(prevPlayer, levelMap));
+            } else if (event.key === 's' || event.key === 'S') {
+                setPlayerPosition(prevPlayer => moveDown(prevPlayer, levelMap));
+            } else if (event.key === 'd' || event.key === 'D') {
+                setPlayerPosition(prevPlayer => moveRight(prevPlayer, levelMap));
+            } else if (event.key === 'f' || event.key === 'F') {
+                shoot(playerPosition, levelMap, setLevelMap, setBullets, setExplosions);
+            }
         };
 
         const handleMouseDown = (event) => {
-            if (event.button === 0) shoot(player, levelMap, setLevelMap, setBullets, setExplosions);
+            if (event.button === 0) {
+                shoot(playerPosition, levelMap, setLevelMap, setBullets, setExplosions);
+            }
         };
 
         window.addEventListener('keydown', handleKeyDown);
@@ -43,8 +44,9 @@ const Player = ({ levelMap, setLevelMap, initialPosition, bonus }) => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('mousedown', handleMouseDown);
         };
-    }, [moveUp, moveDown, moveLeft, moveRight, player.direction]);
+    }, [playerPosition, levelMap, setLevelMap]);
 
+    // Handle Bullet Movements and Collisions
     useEffect(() => {
         const interval = setInterval(() => {
             setBullets((prevBullets) =>
@@ -63,12 +65,12 @@ const Player = ({ levelMap, setLevelMap, initialPosition, bonus }) => {
                 type="enemy_A"
                 style={{
                     position: 'absolute',
-                    left: `${player.col * 32}px`,
-                    top: `${player.row * 32}px`,
+                    left: `${playerPosition.col * 32}px`,
+                    top: `${playerPosition.row * 32}px`,
                     width: '64px',
                     height: '64px',
-                    backgroundColor: player.color,
-                    transform: getRotation(player.direction),
+                    backgroundColor: playerPosition.color,
+                    transform: getRotation(playerPosition.direction),
                 }}
             />
             {bullets.map((bullet, index) => (
