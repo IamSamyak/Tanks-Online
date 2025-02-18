@@ -1,8 +1,8 @@
 // src/utils/movement.js
 
-// Function to check if a position is a valid square for movement
-const isValidMove = (col, row, levelMap, direction) => {
-    const isEmpty = (c, r) => levelMap[r] && (levelMap[r][c] === 'empty' || levelMap[r][c] === 'bush');
+// Function to check if a playerInfo is a valid square for movement
+const isValidMove = (col, row, levelMap, direction,boatBonus) => {
+    const isEmpty = (c, r) => levelMap[r] && (levelMap[r][c] === 'empty' || levelMap[r][c] === 'bush' || (boatBonus && levelMap[r][c] === 'water'));
   
     switch (direction) {
       case 'up':
@@ -19,36 +19,36 @@ const isValidMove = (col, row, levelMap, direction) => {
   };
   
   // Functions for each movement direction
-  const moveUp = (position, levelMap) => {
-    const newRow = position.row - 1;
-    if (isValidMove(position.col, newRow, levelMap, 'up')) {
-      return { ...position, row: newRow, direction: 'up' };
+  const moveUp = (playerInfo, levelMap) => {
+    const newRow = playerInfo.row - 1;
+    if (isValidMove(playerInfo.col, newRow, levelMap, 'up',playerInfo.boatBonus)) {
+      return { ...playerInfo, row: newRow, direction: 'up' };
     }
-    return { ...position, direction: 'up' };
+    return { ...playerInfo, direction: 'up' };
   };
   
-  const moveDown = (position, levelMap) => {
-    const newRow = position.row + 1;
-    if (isValidMove(position.col, newRow, levelMap, 'down')) {
-      return { ...position, row: newRow, direction: 'down' };
+  const moveDown = (playerInfo, levelMap) => {
+    const newRow = playerInfo.row + 1;
+    if (isValidMove(playerInfo.col, newRow, levelMap, 'down',playerInfo.boatBonus)) {
+      return { ...playerInfo, row: newRow, direction: 'down' };
     }
-    return { ...position, direction: 'down' };
+    return { ...playerInfo, direction: 'down' };
   };
   
-  const moveLeft = (position, levelMap) => {
-    const newCol = position.col - 1;
-    if (isValidMove(newCol, position.row, levelMap, 'left')) {
-      return { ...position, col: newCol, direction: 'left' };
+  const moveLeft = (playerInfo, levelMap) => {
+    const newCol = playerInfo.col - 1;
+    if (isValidMove(newCol, playerInfo.row, levelMap, 'left',playerInfo.boatBonus)) {
+      return { ...playerInfo, col: newCol, direction: 'left' };
     }
-    return { ...position, direction: 'left' };
+    return { ...playerInfo, direction: 'left' };
   };
   
-  const moveRight = (position, levelMap) => {
-    const newCol = position.col + 1;
-    if (isValidMove(newCol, position.row, levelMap, 'right')) {
-      return { ...position, col: newCol, direction: 'right' };
+  const moveRight = (playerInfo, levelMap) => {
+    const newCol = playerInfo.col + 1;
+    if (isValidMove(newCol, playerInfo.row, levelMap, 'right',playerInfo.boatBonus)) {
+      return { ...playerInfo, col: newCol, direction: 'right' };
     }
-    return { ...position, direction: 'right' };
+    return { ...playerInfo, direction: 'right' };
   };
   
   // Centralized getRotation logic
@@ -68,10 +68,11 @@ const isValidMove = (col, row, levelMap, direction) => {
   };
   
   export {
+    isValidMove,
     moveUp,
     moveDown,
     moveLeft,
     moveRight,
-    getRotation,
+    getRotation
   };
   

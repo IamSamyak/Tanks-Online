@@ -1,22 +1,34 @@
-// src/components/Game.js
-
+// Game.js
 import React, { useEffect, useState } from 'react';
 import Tile from './Tile';
 import Player from './Player';
 import './Game.css';
 import Enemy from './Enemy';
-import { spwanBonus } from '../utils/spwan'; // Import the spawnBonus function
-import { tileMapping } from '../constants/game-constants'; 
-import GameInfo from './GameInfo'; // Import GameInfo component
+import { spwanBonus, spawnEnemy } from '../utils/spwan';
+import { tileMapping } from '../constants/game-constants';
+import GameInfo from './GameInfo';
+import { handleBonusCollision } from '../utils/bonusHandler'; // Import the modularized function
 
-const NUM_ENEMIES = 2;
+const MAX_ENEMIES = 1;
+const ENEMY_SPAWN_INTERVAL = 7000; // 7 seconds
 
 const Game = () => {
   const [levelMap, setLevelMap] = useState([]);
-  const [enemies, setEnemies] = useState([]);
+  const [enemiesInfo, setEnemiesInfo] = useState([
+    {
+      id: `enemy_initial`,
+      type: 'A',
+      col: [0, 12, 24][Math.floor(Math.random() * 3)], // Random column: 0, 12, or 24
+      row: 0, // Fixed row 0
+      direction: 'down',
+      health: 2,
+      frozen: false,
+      boatBonus: false
+    },
+  ]);
   const [bonus, setBonus] = useState(null);
-  const [playerPosition, setPlayerPosition] = useState({ col: 9, row: 21, direction: 'up', color: 'blue' });
-  const [playerPower, setPlayerPower] = useState(3); // Dummy value for player power
+  const [playerInfo, setPlayerInfo] = useState({ col: 9, row: 24, direction: 'up', color: 'blue', health: 2, lives: 1, star: 3, boatBonus: false });
+  const [baseDestroyed, setBaseDestroyed] = useState(false);
 
   const loadLevel = async (levelNumber) => {
     try {
@@ -38,32 +50,15 @@ const Game = () => {
         });
         tiles.push(tileRow);
       });
-
-      // Set enemies at random positions
-      const tempEnemies = [];
-      for (let i = 0; i < NUM_ENEMIES; i++) {
-        const randomIndex = Math.floor(Math.random() * emptyTiles.length);
-        const position = emptyTiles[randomIndex];
-        tempEnemies.push({
-          id: `enemy_${i}`,
-          type: 'A',
-          col: position.col,
-          row: position.row,
-          direction: 'up'
-        });
-        emptyTiles.splice(randomIndex, 1); // Remove the occupied tile from the list
-      }
-
       setLevelMap(tiles);
-      setEnemies(tempEnemies);
-      spwanBonus(emptyTiles, setBonus); // Initial bonus spawn
+      spwanBonus(emptyTiles, setBonus);
     } catch (error) {
       console.error('Failed to load level:', error);
     }
   };
 
   const updateEnemyPosition = (id, newPosition) => {
-    setEnemies((prevEnemies) =>
+    setEnemiesInfo((prevEnemies) =>
       prevEnemies.map((enemy) =>
         enemy.id === id ? { ...enemy, col: newPosition.col, row: newPosition.row } : enemy
       )
@@ -71,8 +66,22 @@ const Game = () => {
   };
 
   useEffect(() => {
-    loadLevel(1);
+    loadLevel(10);
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      spawnEnemy(enemiesInfo, setEnemiesInfo, MAX_ENEMIES);
+    }, ENEMY_SPAWN_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [enemiesInfo]);
+
+  useEffect(() => {
+    if (bonus) {
+      handleBonusCollision(bonus, playerInfo, setEnemiesInfo, setPlayerInfo, setLevelMap, setBonus);
+    }
+  }, [bonus, playerInfo]);
 
   return (
     <div className="game-wrapper">
@@ -96,29 +105,32 @@ const Game = () => {
           }}
         />
 
-        {/* Pass playerPosition state to Player component */}
-        <Player
+        {enemiesInfo && levelMap && <Player
           levelMap={levelMap}
           setLevelMap={setLevelMap}
-          playerPosition={playerPosition}
-          setPlayerPosition={setPlayerPosition}
+          playerInfo={playerInfo}
+          setPlayerInfo={setPlayerInfo}
           bonus={bonus}
-        />
+          setBonus={setBonus}
+          enemiesInfo={enemiesInfo}
+          setEnemiesInfo={setEnemiesInfo}
+          setBaseDestroyed={setBaseDestroyed}
+        />}
 
-        {/* Loop through enemies and render each one */}
-        {enemies.map((enemy) => (
+        {enemiesInfo.map((enemy) => (
           <Enemy
             key={enemy.id}
             initialPosition={{ col: enemy.col, row: enemy.row, direction: enemy.direction }}
             levelMap={levelMap}
             setLevelMap={setLevelMap}
             type={enemy.type}
-            target={playerPosition}
+            target={playerInfo}
+            frozen={enemy.frozen}
             updatePosition={updateEnemyPosition}
+            setBaseDestroyed={setBaseDestroyed}
           />
         ))}
 
-        {/* Render bonus if exists */}
         {bonus && (
           <Tile
             type={bonus.type}
@@ -128,13 +140,13 @@ const Game = () => {
               top: `${bonus.row * 32}px`,
               width: '32px',
               height: '32px',
-              animation: 'blink 2.5s infinite'
+              animation: 'blink 2.5s infinite',
             }}
           />
         )}
       </div>
-      
-      <GameInfo playerPower={playerPower} />
+
+      <GameInfo playerPower={baseDestroyed ? 'destroyed' : 'alive'} />
     </div>
   );
 };

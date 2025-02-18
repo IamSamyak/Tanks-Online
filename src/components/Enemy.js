@@ -9,10 +9,10 @@ import {
 import Tile from './Tile';
 import Bullet from './Bullet';
 import Explosion from './Explosion';
-import { handleBulletCollision } from '../utils/collisions';
+import { handleBulletCollisionEnemy } from '../utils/collisions';
 import { shoot } from '../utils/actions';
 
-const Enemy = ({ levelMap, setLevelMap, initialPosition, type = 'A', target, updatePosition }) => {
+const Enemy = ({ levelMap, setLevelMap, initialPosition, type = 'A', target, updatePosition, frozen, setBaseDestroyed }) => {
   const [enemy, setEnemy] = useState({
     ...initialPosition,
     direction: 'up',
@@ -22,8 +22,10 @@ const Enemy = ({ levelMap, setLevelMap, initialPosition, type = 'A', target, upd
   const [explosions, setExplosions] = useState([]);
   const [canFire, setCanFire] = useState(true);
 
-  // Handle Automated Movements
+  // Handle Automated Movements (if not frozen)
   useEffect(() => {
+    if (frozen) return; // If frozen, skip movement
+
     const interval = setInterval(() => {
       let newEnemyPosition;
       switch (type) {
@@ -49,23 +51,25 @@ const Enemy = ({ levelMap, setLevelMap, initialPosition, type = 'A', target, upd
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [enemy, levelMap, type, target, updatePosition]);
+  }, [enemy, levelMap, type, target, updatePosition, frozen,setBaseDestroyed]);
 
-  // Handle Shooting Bullets
+  // Handle Shooting Bullets (if not frozen)
   useEffect(() => {
-    if (canFire) {
+    if (canFire && !frozen) {
       shoot(enemy, levelMap, setLevelMap, setBullets, setExplosions);
       setCanFire(false);
     }
-  }, [canFire, enemy, levelMap, setLevelMap]);
+  }, [canFire, enemy, levelMap, setLevelMap, frozen]);
 
   // Handle Bullet Movements and Collisions
   useEffect(() => {
+    if (frozen) return; // Skip bullet movement if frozen
+
     const interval = setInterval(() => {
       setBullets(prevBullets =>
         prevBullets
           .map(bullet => 
-            handleBulletCollision(bullet, levelMap, setLevelMap, setExplosions, () => {
+            handleBulletCollisionEnemy(bullet, levelMap, setLevelMap, setExplosions, () => {
               setCanFire(true); // Allow firing again after collision
             })
           )
@@ -74,7 +78,7 @@ const Enemy = ({ levelMap, setLevelMap, initialPosition, type = 'A', target, upd
     }, 100);
 
     return () => clearInterval(interval);
-  }, [levelMap, setLevelMap]);
+  }, [levelMap, setLevelMap, frozen]);
 
   // Handle Explosions Cleanup
   useEffect(() => {

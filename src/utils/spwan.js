@@ -1,23 +1,26 @@
 // spawn.js
 import { bonusTypes } from '../constants/game-constants'; 
+// spwan.js
 
-// Function to spawn enemies at random positions
-export const spawnEnemies = (emptyTiles, NUM_ENEMIES) => {
-    const tempEnemies = [];
-    for (let i = 0; i < NUM_ENEMIES; i++) {
-      const randomIndex = Math.floor(Math.random() * emptyTiles.length);
-      const position = emptyTiles[randomIndex];
-      tempEnemies.push({
-        id: `enemy_${i}`,
-        type: 'A', // You can customize the enemy type
-        col: position.col,
-        row: position.row,
-        direction: 'up', // You can customize the initial direction
-      });
-      emptyTiles.splice(randomIndex, 1); // Remove the occupied tile from the list
-    }
-    return tempEnemies;
+export const spawnEnemy = (prevEnemies, setEnemiesInfo, MAX_ENEMIES) => {
+  if (prevEnemies.length >= MAX_ENEMIES) return prevEnemies;
+
+  const randomCol = [0, 12, 24][Math.floor(Math.random() * 3)];
+  const randomRow = 0;
+  const newEnemy = {
+    id: `enemy_${Date.now()}`,
+    type: 'A',
+    col: randomCol,
+    row: randomRow,
+    direction: 'down',
+    health: 2,
+    frozen: false,
+    boatBonus: false,
   };
+
+  setEnemiesInfo([...prevEnemies, newEnemy]);
+};
+
   
 export const spwanBonus = (emptyTiles, setBonus) => {
   const randomIndex = Math.floor(Math.random() * emptyTiles.length);
@@ -25,7 +28,8 @@ export const spwanBonus = (emptyTiles, setBonus) => {
   const randomBonusType = bonusTypes[Math.floor(Math.random() * bonusTypes.length)];
 
   setBonus({
-    type: `bonus_${randomBonusType}`,
+    // type: `bonus_${randomBonusType}`,
+    type: `bonus_shovel`,
     col: position.col,
     row: position.row,
   });

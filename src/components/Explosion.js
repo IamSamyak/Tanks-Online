@@ -3,8 +3,6 @@ import explosionImg from '../assets/explosion.png';
 import './Explosion.css'
 
 const Explosion = ({ explosion }) => {
-
-
     return (
         <img
             src={explosionImg}
