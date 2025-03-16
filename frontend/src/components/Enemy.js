@@ -47,6 +47,7 @@ const Enemy = ({ levelMap, setLevelMap, initialPosition, type = 'A', target, upd
 
       // Update enemy position and inform the parent component
       setEnemy(newEnemyPosition);
+      
       updatePosition(enemy.id, newEnemyPosition); // Notify parent about position update
     }, 1500);
 

@@ -16,7 +16,7 @@ const Game = () => {
   const [levelMap, setLevelMap] = useState([]);
   const [enemiesInfo, setEnemiesInfo] = useState([
     {
-      id: `enemy_initial`,
+      id: `enemy_initial_${Date.now()}`,
       type: 'A',
       col: [0, 12, 24][Math.floor(Math.random() * 3)], // Random column: 0, 12, or 24
       row: 0, // Fixed row 0
@@ -57,7 +57,7 @@ const Game = () => {
     }
   };
 
-  const updateEnemyPosition = (id, newPosition) => {
+  const updateEnemyPosition = (id, newPosition) => {    
     setEnemiesInfo((prevEnemies) =>
       prevEnemies.map((enemy) =>
         enemy.id === id ? { ...enemy, col: newPosition.col, row: newPosition.row } : enemy
@@ -120,7 +120,7 @@ const Game = () => {
         {enemiesInfo.map((enemy) => (
           <Enemy
             key={enemy.id}
-            initialPosition={{ col: enemy.col, row: enemy.row, direction: enemy.direction }}
+            initialPosition={{id:enemy.id, col: enemy.col, row: enemy.row, direction: enemy.direction }}
             levelMap={levelMap}
             setLevelMap={setLevelMap}
             type={enemy.type}

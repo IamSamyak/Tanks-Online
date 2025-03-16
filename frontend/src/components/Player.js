@@ -47,7 +47,7 @@ const Player = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemiesInfo,
     const interval = setInterval(() => {
       setBullets((prevBullets) =>
         prevBullets
-          .map((bullet) => handleBulletCollision(bullet, levelMap, setLevelMap, setExplosions, enemiesInfo, setEnemiesInfo, setBaseDestroyed))
+          .map((bullet) => handleBulletCollision(bullet, levelMap, setLevelMap, setExplosions, [...enemiesInfo], setEnemiesInfo, setBaseDestroyed))
           .filter((bullet) => bullet !== null)
       );
     }, 100);
