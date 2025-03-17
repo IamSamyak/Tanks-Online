@@ -1,8 +1,24 @@
 .explosion {
-  animation: explosion-animation 0.5s steps(4) forwards;
+  background: url('../assets/explosion.png') no-repeat;
+  /* Add sprite sheet */
+  background-size: cover;
+  /* Scale the sprite sheet to fit */
+  animation: explosion-animation 2.5s steps(4) forwards;
+  height: 100%;
+  width: 100%;
 }
 
 @keyframes explosion-animation {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+    background-position: 0 0;
+  }
+
+  95%{
+    background-position: -350px 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }

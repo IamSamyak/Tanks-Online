@@ -4,8 +4,8 @@ import './Explosion.css'
 
 const Explosion = ({ explosion }) => {
     return (
-        <img
-            src={explosionImg}
+        <div
+            // src={explosionImg}
             alt="Explosion"
             className='explosion'
             style={{
@@ -15,8 +15,8 @@ const Explosion = ({ explosion }) => {
                 width: '32px',
                 height: '32px',
                 pointerEvents: 'none',
-            }}
-        />
+            }}>
+        </div>
     );
 };
 
