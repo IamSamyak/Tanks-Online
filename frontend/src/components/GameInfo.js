@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-const GameInfo = ({ playerPower }) => {
+const GameInfo = ({ playerPower, playerCount }) => {
   return (
     <div className="player-info">
       <h3>Player Controls</h3>
@@ -16,6 +16,7 @@ const GameInfo = ({ playerPower }) => {
 
       <div>
         <h4>Player Power: {playerPower}</h4>
+        <h4>Number of Players: {playerCount}</h4>
       </div>
     </div>
   );
