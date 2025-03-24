@@ -8,12 +8,12 @@ import { spwanBonus, spawnEnemy } from '../utils/spwan';
 import { tileMapping } from '../constants/game-constants';
 import GameInfo from './GameInfo';
 import { handleBonusCollision } from '../utils/bonusHandler'; // Import the modularized function
+import OnlinePlayer from './OnlinePlayer';
 
 const MAX_ENEMIES = 1;
-const ENEMY_SPAWN_INTERVAL = 7000; // 7 seconds
-const GAME_CODE = "777";
+const ENEMY_SPAWN_INTERVAL = 5000; // 7 seconds
 
-const Game = () => {
+const Game = ({gameCode}) => {
   const [levelMap, setLevelMap] = useState([]);
   const [playerCount, setPlayerCount] = useState(0);
   const [enemiesInfo, setEnemiesInfo] = useState([
@@ -30,6 +30,7 @@ const Game = () => {
   ]);
   const [bonus, setBonus] = useState(null);
   const [playerInfo, setPlayerInfo] = useState({ col: 9, row: 24, direction: 'up', color: 'blue', health: 2, lives: 1, star: 3, boatBonus: false });
+  const [onlinePlayerInfo, setOnlinePlayerInfo] = useState({ col: 15, row: 24, direction: 'up', color: 'blue', health: 2, lives: 1, star: 3, boatBonus: false });
   const [baseDestroyed, setBaseDestroyed] = useState(false);
   const [socket, setSocket] = useState(null);
 
@@ -69,32 +70,31 @@ const Game = () => {
   };
 
   useEffect(() => {
-    loadLevel(10);
-  }, []);
-
-  useEffect(() => {
+    console.log('running');
+    loadLevel(7);
     const ws = new WebSocket(`ws://localhost:8080/game`);
 
     ws.onopen = () => {
       console.log("Connected to WebSocket");
-      ws.send(JSON.stringify({ action: "join", gameCode: GAME_CODE }));
+      ws.send(JSON.stringify({ type: "join", gameCode: gameCode }));
     };
 
     ws.onmessage = (message) => {
       const data = JSON.parse(message.data);      
-      if (data.type === "playerCount") {
-        console.log('data',data.count);
-        
+      if (data.type === "playerCount") {  
         setPlayerCount(data.count);
+      }else if(data.type === "playerMove"){
+        console.log(data,'data')
       }
+
     };
 
     ws.onclose = () => {
       console.log("Disconnected from WebSocket");
     };
 
+    
     setSocket(ws);
-
     return () => {
       ws.close();
     };
@@ -146,6 +146,20 @@ const Game = () => {
           enemiesInfo={enemiesInfo}
           setEnemiesInfo={setEnemiesInfo}
           setBaseDestroyed={setBaseDestroyed}
+          socket={socket}
+        />}
+
+        {enemiesInfo && levelMap && <OnlinePlayer
+          levelMap={levelMap}
+          setLevelMap={setLevelMap}
+          playerInfo={onlinePlayerInfo}
+          setPlayerInfo={setOnlinePlayerInfo}
+          bonus={bonus}
+          setBonus={setBonus}
+          enemiesInfo={enemiesInfo}
+          setEnemiesInfo={setEnemiesInfo}
+          setBaseDestroyed={setBaseDestroyed}
+          socket={socket}
         />}
 
         {enemiesInfo.map((enemy) => (
@@ -177,7 +191,7 @@ const Game = () => {
         )}
       </div>
 
-      <GameInfo playerPower={baseDestroyed ? 'destroyed' : 'alive'} playerCount={playerCount}/>
+      <GameInfo playerPower={baseDestroyed ? 'destroyed' : 'alive'} playerCount={playerCount} gameCode={gameCode}/>
     </div>
   );
 };

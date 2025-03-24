@@ -6,7 +6,7 @@ import { getRotation } from '../utils/movement';
 import { handleBulletCollision } from '../utils/collisions';
 import { handleMovement, handleShooting } from '../utils/controls';
 
-const Player = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemiesInfo, setEnemiesInfo, setBaseDestroyed }) => {
+const Player = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemiesInfo, setEnemiesInfo, setBaseDestroyed, socket }) => {
   const [bullets, setBullets] = useState([]);
   const [explosions, setExplosions] = useState([]);
   const [lastMoveTime, setLastMoveTime] = useState(0); // Timestamp of the last move
@@ -17,7 +17,7 @@ const Player = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemiesInfo,
   // Handle Player Movement
   useEffect(() => {
     const onKeyDown = (event) => {
-      handleMovement(event, setPlayerInfo, levelMap, speedLevel, lastMoveTime, setLastMoveTime);
+      handleMovement(event, setPlayerInfo, levelMap, speedLevel, lastMoveTime, setLastMoveTime,socket);
     };
 
     window.addEventListener('keydown', onKeyDown);

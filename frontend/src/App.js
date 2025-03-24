@@ -1,12 +1,15 @@
-// src/App.js
-import React from 'react';
-import Game from './components/Game';
-import './App.css';
+import React, { useState } from "react";
+import Home from "./pages/Home";
+import Game from "./components/Game";
 
-function App() {
+const App = () => {
+  const [gameCode, setGameCode] = useState(null);
+
   return (
-      <Game />
+    <div>
+      {gameCode ? <Game gameCode={gameCode} /> : <Home setGameCode={setGameCode} />}
+    </div>
   );
-}
+};
 
 export default App;

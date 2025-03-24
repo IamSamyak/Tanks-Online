@@ -6,31 +6,41 @@ import { getRotation } from '../utils/movement';
 import { handleBulletCollision } from '../utils/collisions';
 import { handleMovement, handleShooting } from '../utils/controls';
 
-const socket = new WebSocket('ws://localhost:8080/game');
-
-const OnlinePlayer = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemiesInfo, setEnemiesInfo, setBaseDestroyed }) => {
+const Player = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemiesInfo, setEnemiesInfo, setBaseDestroyed, socket }) => {
   const [bullets, setBullets] = useState([]);
   const [explosions, setExplosions] = useState([]);
-  const [lastMoveTime, setLastMoveTime] = useState(0);
+  const [lastMoveTime, setLastMoveTime] = useState(0); // Timestamp of the last move
 
+  // Determine speed level based on playerInfo.star
   const speedLevel = playerInfo.star === 1 ? 'low' : playerInfo.star === 2 ? 'medium' : 'high';
 
-  // Handle Socket Messages for OnlinePlayer Input
+  // Handle Player Movement
   useEffect(() => {
-    socket.onmessage = (event) => {
-      const data = event.data.trim();
-
-      if (["w", "a", "s", "d"].includes(data)) {
-        handleMovement({ key: data }, setPlayerInfo, levelMap, speedLevel, lastMoveTime, setLastMoveTime);
-      } else if (data === "f") {
-        handleShooting({ key: data }, bullets, playerInfo, levelMap, setLevelMap, setBullets, setExplosions);
-      }
+    const onKeyDown = (event) => {
+      handleMovement(event, setPlayerInfo, levelMap, speedLevel, lastMoveTime, setLastMoveTime,socket);
     };
+
+    window.addEventListener('keydown', onKeyDown);
 
     return () => {
-      socket.close();
+      window.removeEventListener('keydown', onKeyDown);
     };
-  }, [levelMap, setPlayerInfo, speedLevel, lastMoveTime, bullets, playerInfo, setLevelMap]);
+  }, [levelMap, setPlayerInfo, speedLevel, lastMoveTime]);
+
+  // Handle Shooting
+  useEffect(() => {
+    const onShoot = (event) => {
+      handleShooting(event, bullets, playerInfo, levelMap, setLevelMap, setBullets, setExplosions);
+    };
+
+    window.addEventListener('keydown', onShoot);
+    window.addEventListener('mousedown', onShoot);
+
+    return () => {
+      window.removeEventListener('keydown', onShoot);
+      window.removeEventListener('mousedown', onShoot);
+    };
+  }, [bullets, playerInfo, levelMap, setLevelMap]);
 
   // Handle Bullet Movements and Collisions
   useEffect(() => {
@@ -88,4 +98,4 @@ const OnlinePlayer = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemie
   );
 };
 
-export default OnlinePlayer;
+export default Player;
