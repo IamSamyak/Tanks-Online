@@ -4,7 +4,7 @@ import { speedBuffer } from '../constants/game-constants';
 import { shoot } from './actions';
 
 // Handle Player Movement
-export const handleMovement = (event, setPlayerInfo, levelMap, speedLevel, lastMoveTime, setLastMoveTime, socket) => {
+export const handleMovement = (event, setPlayerInfo, levelMap, speedLevel, lastMoveTime, setLastMoveTime) => {
   const currentTime = Date.now();
 
   // Check if enough time has passed since the last move for buffering
@@ -13,13 +13,6 @@ export const handleMovement = (event, setPlayerInfo, levelMap, speedLevel, lastM
   }
 
   setLastMoveTime(currentTime);
-
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({
-      type: "playerMove",
-      playerMove: event.key
-    }));
-  }
 
   if (event.key === 'w' || event.key === 'W') {
     setPlayerInfo(prevPlayer => moveUp(prevPlayer, levelMap));

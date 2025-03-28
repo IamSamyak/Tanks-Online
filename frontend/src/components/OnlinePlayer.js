@@ -6,7 +6,7 @@ import { getRotation } from '../utils/movement';
 import { handleBulletCollision } from '../utils/collisions';
 import { handleMovement, handleShooting } from '../utils/controls';
 
-const Player = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemiesInfo, setEnemiesInfo, setBaseDestroyed, socket }) => {
+const Player = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemiesInfo, setEnemiesInfo, setBaseDestroyed, socket, onlinePlayerMove }) => {
   const [bullets, setBullets] = useState([]);
   const [explosions, setExplosions] = useState([]);
   const [lastMoveTime, setLastMoveTime] = useState(0); // Timestamp of the last move
@@ -14,32 +14,17 @@ const Player = ({ levelMap, setLevelMap, playerInfo, setPlayerInfo, enemiesInfo,
   // Determine speed level based on playerInfo.star
   const speedLevel = playerInfo.star === 1 ? 'low' : playerInfo.star === 2 ? 'medium' : 'high';
 
-  // Handle Player Movement
   useEffect(() => {
-    const onKeyDown = (event) => {
-      handleMovement(event, setPlayerInfo, levelMap, speedLevel, lastMoveTime, setLastMoveTime,socket);
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [levelMap, setPlayerInfo, speedLevel, lastMoveTime]);
+    // console.log('online payer move ', onlinePlayerMove);
+    // handleMovement(event, setPlayerInfo, levelMap, speedLevel, lastMoveTime, setLastMoveTime);
+  }, [onlinePlayerMove,levelMap, setPlayerInfo, speedLevel, lastMoveTime])
 
   // Handle Shooting
   useEffect(() => {
-    const onShoot = (event) => {
-      handleShooting(event, bullets, playerInfo, levelMap, setLevelMap, setBullets, setExplosions);
-    };
+    // const onShoot = (event) => {
+    //   handleShooting(event, bullets, playerInfo, levelMap, setLevelMap, setBullets, setExplosions);
+    // };
 
-    window.addEventListener('keydown', onShoot);
-    window.addEventListener('mousedown', onShoot);
-
-    return () => {
-      window.removeEventListener('keydown', onShoot);
-      window.removeEventListener('mousedown', onShoot);
-    };
   }, [bullets, playerInfo, levelMap, setLevelMap]);
 
   // Handle Bullet Movements and Collisions

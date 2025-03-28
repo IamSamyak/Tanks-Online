@@ -2,17 +2,17 @@ import React, { useState } from "react";
 import "./Home.css";
 import { v4 as uuidv4 } from "uuid"; // Generates unique game codes
 
-const Home = ({ setGameCode }) => {
+const Home = ({ setGameData }) => {
   const [inputGameCode, setInputGameCode] = useState("");
 
   const handleCreateGame = () => {
     const newGameCode = uuidv4().slice(0, 6).toUpperCase(); // Generate 6-character game code
-    setGameCode(newGameCode);
+    setGameData({ gameCode: newGameCode, playerId: "player1" });
   };
 
   const handleJoinGame = () => {
     if (inputGameCode.trim().length === 6) {
-      setGameCode(inputGameCode.trim().toUpperCase());
+      setGameData({ gameCode: inputGameCode.trim().toUpperCase(), playerId: "player2" });
     } else {
       alert("Enter a valid 6-character game code.");
     }

@@ -13,9 +13,11 @@ import OnlinePlayer from './OnlinePlayer';
 const MAX_ENEMIES = 1;
 const ENEMY_SPAWN_INTERVAL = 5000; // 7 seconds
 
-const Game = ({gameCode}) => {
+const Game = ({gameCode,twoPlayerId}) => {
   const [levelMap, setLevelMap] = useState([]);
   const [playerCount, setPlayerCount] = useState(0);
+  const [onlinePlayerMove, setOnlinePlayerMove] = useState({ move: '', id: 0 });
+  
   const [enemiesInfo, setEnemiesInfo] = useState([
     {
       id: `enemy_initial_${Date.now()}`,
@@ -29,8 +31,8 @@ const Game = ({gameCode}) => {
     },
   ]);
   const [bonus, setBonus] = useState(null);
-  const [playerInfo, setPlayerInfo] = useState({ col: 9, row: 24, direction: 'up', color: 'blue', health: 2, lives: 1, star: 3, boatBonus: false });
-  const [onlinePlayerInfo, setOnlinePlayerInfo] = useState({ col: 15, row: 24, direction: 'up', color: 'blue', health: 2, lives: 1, star: 3, boatBonus: false });
+  const [player1Info, setPlayer1Info] = useState({ col: 9, row: 24, direction: 'up', color: 'blue', health: 2, lives: 1, star: 3, boatBonus: false, twoPlayerId });
+  const [player2Info, setPlayer2Info] = useState({ col: 15, row: 24, direction: 'up', color: 'blue', health: 2, lives: 1, star: 3, boatBonus: false, twoPlayerId });
   const [baseDestroyed, setBaseDestroyed] = useState(false);
   const [socket, setSocket] = useState(null);
 
@@ -84,7 +86,13 @@ const Game = ({gameCode}) => {
       if (data.type === "playerCount") {  
         setPlayerCount(data.count);
       }else if(data.type === "playerMove"){
-        console.log(data,'data')
+        debugger
+        console.log('player move is ',data);
+        
+        setOnlinePlayerMove((prevMove) => ({
+          move: data.playerMove,
+          id: prevMove.id + 1,
+        }));
       }
 
     };
@@ -110,9 +118,9 @@ const Game = ({gameCode}) => {
 
   useEffect(() => {
     if (bonus) {
-      handleBonusCollision(bonus, playerInfo, setEnemiesInfo, setPlayerInfo, setLevelMap, setBonus);
+      handleBonusCollision(bonus, player1Info, setEnemiesInfo, setPlayer1Info, setLevelMap, setBonus);
     }
-  }, [bonus, playerInfo]);
+  }, [bonus, player1Info]);
 
   return (
     <div className="game-wrapper">
@@ -139,28 +147,30 @@ const Game = ({gameCode}) => {
         {enemiesInfo && levelMap && <Player
           levelMap={levelMap}
           setLevelMap={setLevelMap}
-          playerInfo={playerInfo}
-          setPlayerInfo={setPlayerInfo}
+          playerInfo={twoPlayerId == 'player1' ? player1Info :player2Info}
+          setPlayerInfo={twoPlayerId == 'player1' ? setPlayer1Info :setPlayer2Info}
           bonus={bonus}
           setBonus={setBonus}
           enemiesInfo={enemiesInfo}
           setEnemiesInfo={setEnemiesInfo}
           setBaseDestroyed={setBaseDestroyed}
           socket={socket}
+          onlinePlayerMove={onlinePlayerMove}
         />}
 
-        {enemiesInfo && levelMap && <OnlinePlayer
+{enemiesInfo && levelMap && <OnlinePlayer
           levelMap={levelMap}
           setLevelMap={setLevelMap}
-          playerInfo={onlinePlayerInfo}
-          setPlayerInfo={setOnlinePlayerInfo}
+          playerInfo={twoPlayerId == 'player2' ? player1Info :player2Info}
+          setPlayerInfo={twoPlayerId == 'player2' ? setPlayer1Info :setPlayer2Info}
           bonus={bonus}
           setBonus={setBonus}
           enemiesInfo={enemiesInfo}
           setEnemiesInfo={setEnemiesInfo}
           setBaseDestroyed={setBaseDestroyed}
           socket={socket}
-        />}
+          onlinePlayerMove={onlinePlayerMove}
+        />}      
 
         {enemiesInfo.map((enemy) => (
           <Enemy
@@ -169,7 +179,7 @@ const Game = ({gameCode}) => {
             levelMap={levelMap}
             setLevelMap={setLevelMap}
             type={enemy.type}
-            target={playerInfo}
+            target={player1Info}
             frozen={enemy.frozen}
             updatePosition={updateEnemyPosition}
             setBaseDestroyed={setBaseDestroyed}

@@ -3,11 +3,11 @@ import Home from "./pages/Home";
 import Game from "./components/Game";
 
 const App = () => {
-  const [gameCode, setGameCode] = useState(null);
+  const [gameData, setGameData] = useState(null);
 
   return (
     <div>
-      {gameCode ? <Game gameCode={gameCode} /> : <Home setGameCode={setGameCode} />}
+      {gameData ? <Game gameCode={gameData.gameCode} twoPlayerId={gameData.playerId} /> : <Home setGameData={setGameData} />}
     </div>
   );
 };
